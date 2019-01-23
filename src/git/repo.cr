@@ -5,6 +5,45 @@ module Git
     @value : LibGit::Repository
     getter :path
 
+    def inspect
+    end
+
+    def checkout(target, options = {} of Symbol=>Symbol)
+    end
+
+    def status(file = nil, &block)
+    end
+
+    def diff(left, right, opt = {} of Symbol=>Symbol)
+    end
+
+    def diff_workdir(left, opts = {} of Symbol=>Symbol)
+    end
+
+    def rev_parse(spec)
+    end
+
+    def rev_parse_oid(spec)
+    end
+
+    def remotes
+    end
+
+    def submodules
+    end
+
+    def create_branch(name, sha_or_ref = "HEAD")
+    end
+
+    def blob_at(revision, path)
+    end
+
+    def fetch(remote_or_url, *args)
+    end
+
+    def push(remote_or_url, *args)
+    end
+
     def initialize(@value, @path : String)
     end
 
