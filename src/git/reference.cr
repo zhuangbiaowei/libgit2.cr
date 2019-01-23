@@ -26,6 +26,10 @@ module Git
       end
     end
 
+    def oid
+      target_id
+    end
+
     def target_id
       if self.type == RefType::Oid
         Oid.new(LibGit.reference_target(@value).value)

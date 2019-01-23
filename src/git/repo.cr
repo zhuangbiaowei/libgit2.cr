@@ -5,6 +5,17 @@ module Git
     @value : LibGit::Repository
     getter :path
 
+    def read(hex)
+      LibGit.repository_odb(out odb, @value)
+      LibGit.oid_fromstrn(out oid, hex, hex.size)
+      LibGit.odb_read(out obj, odb, pointerof(oid))
+      obj_type = LibGit.odb_object_type(obj)
+      obj_len = LibGit.odb_object_size(obj)
+      object = {type: obj_type, len: obj_len, data: String.new(LibGit.odb_object_data(obj).as(UInt8*), obj_len)}
+      LibGit.odb_object_free(obj)
+      return object
+    end
+
     def inspect
     end
 
