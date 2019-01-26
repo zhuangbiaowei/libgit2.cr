@@ -9,6 +9,10 @@ authors:
 description: |
   libgit2 bindings for crystal-lang
 
+dependencies:
+  minitest:
+    github: ysbaddaden/minitest.cr
+
 libraries:
   libgit2: ~> 0.27
 
