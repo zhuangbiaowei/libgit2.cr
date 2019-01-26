@@ -9,7 +9,7 @@ class RepoTest < Minitest::Test
   def test_last_commit_id
     commit_id=`git log -1 --pretty=format:"%H"`
     git = Git::Repository.open(".")
-    oid = git.last_commit.target.to_s
+    oid = git.last_commit.oid
     assert_equal commit_id, oid
     assert_equal true, git.exists?(oid)
   end
