@@ -27,7 +27,7 @@ module Git
     end
 
     def oid
-      target_id
+      target.to_s
     end
 
     def target_id
