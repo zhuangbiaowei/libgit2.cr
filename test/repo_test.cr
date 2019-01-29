@@ -16,6 +16,15 @@ class RepoTest < Minitest::Test
     assert "36060c58702ed4c2a40832c51758d5344201d89a", repo.last_commit.oid
   end
 
+  def test_fails_to_open_unexisting_repos
+    assert_raises Git::Error do
+      Git::Repository.new("fakepath/123/")
+    end
+    assert_raises Git::Error do
+      Git::Repository.new("test")
+    end
+  end
+
   def test_can_check_if_objects_exist
     assert repo.exists?("8496071c1b46c854b31185ea97743be6a8774479")
     assert repo.exists?("1385f264afb75a56a5bec74243be9b367ba4ca08")

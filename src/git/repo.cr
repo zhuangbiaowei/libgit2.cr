@@ -70,7 +70,11 @@ module Git
     def push(remote_or_url, *args)
     end
 
-    def initialize(@value, @path : String)
+    def initialize(@path : String)
+      nerr(LibGit.repository_open(out @value, @path), "Couldn't open repository at #{path}")
+    end
+
+    def initialize(@value : LibGit::Repository, @path : String)
     end
 
     def self.open(path : String)
