@@ -24,6 +24,10 @@ module Git
   class Commit < Object
     @value : LibGit::Commit
 
+    def oid 
+      sha
+    end
+
     def sha
       oid = LibGit.commit_id(@value)
       p = LibGit.oid_tostr_s(oid)

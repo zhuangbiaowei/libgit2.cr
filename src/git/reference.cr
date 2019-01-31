@@ -156,6 +156,14 @@ module Git
         end
       end
 
+      def size
+        count = 0
+        while LibGit.reference_next(out ref, @iter) == 0
+          count = count + 1
+        end
+        return count
+      end
+
       def finalize
         LibGit.reference_iterator_free(@iter)
       end

@@ -22,13 +22,26 @@ module Git
 
     def read(hex)
       LibGit.repository_odb(out odb, @value)
-      LibGit.oid_fromstrn(out oid, hex, hex.size)
-      LibGit.odb_read(out obj, odb, pointerof(oid))
+      nerr(LibGit.oid_fromstrn(out oid, hex, hex.size))
+      nerr(LibGit.odb_read(out obj, odb, pointerof(oid)))
       obj_type = @object_types[LibGit.odb_object_type(obj)]
       obj_len = LibGit.odb_object_size(obj)
       object = OdbObject.new(obj_type, obj_len, String.new(LibGit.odb_object_data(obj).as(UInt8*), obj_len))
       LibGit.odb_object_free(obj)
       return object
+    end
+
+    def read_header(hex)
+      LibGit.repository_odb(out odb, @value)
+      nerr(LibGit.oid_fromstrn(out oid, hex, hex.size))
+      nerr(LibGit.odb_read(out obj, odb, pointerof(oid)))
+      obj_type = @object_types[LibGit.odb_object_type(obj)]
+      obj_len = LibGit.odb_object_size(obj)
+      LibGit.odb_object_free(obj)
+      hash = Hash(Symbol, Symbol|UInt64).new
+      hash[:type] = obj_type
+      hash[:len] = obj_len
+      return hash
     end
 
     def inspect
@@ -200,7 +213,9 @@ module Git
     end
 
     def ref_names
-      refs.each.map { |ref| ref.name }
+      names = [] of String
+      refs.each { |ref| names << ref.name }
+      return names
     end
 
     def tags

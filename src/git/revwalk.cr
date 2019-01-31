@@ -47,6 +47,14 @@ module Git
       end
     end
 
+    def count
+      count = 0
+      while LibGit.revwalk_next(out oid, @value) == 0
+        count = count + 1
+      end
+      return count
+    end
+
     def finalize
       LibGit.revwalk_free(@value)
     end
