@@ -86,13 +86,24 @@ class RepoTest < Minitest::Test
 
   def test_match_all_refs
     refs = repo.refs "refs/heads/*"
-    assert_equal 2, refs.size
+    assert_equal 12, refs.size
   end
 
   def test_return_all_ref_names
     refs = repo.ref_names
     refs.each {|name| assert name.is_a?(String)}
-    assert_equal 5, refs.size
+    assert_equal 30, refs.size
   end
+
+  def test_return_all_tags
+    tags = repo.tags
+    assert_equal 7, tags.size
+  end
+
+  def test_return_matching_tags
+    assert_equal 1, repo.tags("e90810b").size
+    assert_equal 4, repo.tags("*tag*").size
+  end
+
 end
 

@@ -77,6 +77,10 @@ module Git
       raise "not implemented"
     end
 
+    def size
+      @keys.size
+    end
+
     # private class KeysIterator < NoError
     #   include Iterator(String)
 
