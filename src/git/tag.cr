@@ -36,6 +36,7 @@ module Git
 
   class TagCollection < NoError
     include Enumerable(Tag)
+    include Iterable(Tag)
 
     @keys : Array(String)
 
@@ -69,13 +70,32 @@ module Git
 
     def each
       @keys.each do |name|
-        yield fetch(name)
+        yield name
       end
     end
 
-    def each_name
-      raise "not implemented"
+    def each(glob : String) : Nil
+      nerr(LibGit.tag_list_match(out arr, glob, @repo))
+      @keys = arr.count.times.map { |i| String.new(arr.strings[i]) }.to_a
+      LibGit.strarray_free(pointerof(arr))
+      @keys.each do |name|
+        yield name
+      end
     end
+
+    def each(glob : String)
+      nerr(LibGit.tag_list_match(out arr, glob, @repo))
+      @keys = arr.count.times.map { |i| String.new(arr.strings[i]) }.to_a
+      LibGit.strarray_free(pointerof(arr))
+      return @keys
+    end
+
+    def each_name
+      @keys.each do |name|
+        yield name
+      end
+    end
+
 
     def size
       @keys.size

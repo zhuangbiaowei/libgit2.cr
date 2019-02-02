@@ -101,9 +101,31 @@ class RepoTest < Minitest::Test
   end
 
   def test_return_matching_tags
-    assert_equal 1, repo.tags("e90810b").size
-    assert_equal 4, repo.tags("*tag*").size
+    assert_equal 1, repo.tags.each("e90810b").size
+    assert_equal 4, repo.tags.each("*tag*").size
   end
 
+  def test_return_all_remotes
+    remotes = repo.remotes
+    assert_equal 5, remotes.size
+  end
+
+  def test_lookup_head
+    head = repo.head
+    assert_equal "refs/heads/master", head.name
+    assert_equal "a65fedf39aefe402d3bb6e24df4d4f5fe4547750", head.target_id
+    assert_equal :direct, head.type
+  end
+
+  def test_set_head_ref
+    repo.head = "refs/heads/packed"
+    assert_equal "refs/heads/packed", repo.head.name
+  end
+
+  def test_set_head_invalid
+    assert_raises Git::Error do
+      repo.head = "a65fedf39aefe402d3bb6e24df4d4f5fe4547750"
+    end
+  end
 end
 

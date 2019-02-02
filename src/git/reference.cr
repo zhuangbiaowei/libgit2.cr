@@ -13,11 +13,19 @@ module Git
     end
 
     def type
-      LibGit.reference_type(@value)
+      type = LibGit.reference_type(@value)
+      case type
+      when RefType::Oid
+        return :direct
+      when RefType::Symbolic
+        return :symbolic
+      else
+        return type
+      end
     end
 
     def target
-      if self.type == RefType::Oid
+      if self.type == :direct
         nerr(LibGit.object_lookup(out obj, LibGit.reference_owner(@value), LibGit.reference_target(@value), LibGit::OType::ANY))
         Object.new(obj)
       else
@@ -31,8 +39,8 @@ module Git
     end
 
     def target_id
-      if self.type == RefType::Oid
-        Oid.new(LibGit.reference_target(@value).value)
+      if self.type == :direct
+        Oid.new(LibGit.reference_target(@value).value).to_s
       else
         String.new(LibGit.reference_symbolic_target(@value))
       end

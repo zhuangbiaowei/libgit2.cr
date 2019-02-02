@@ -66,6 +66,7 @@ module Git
     end
 
     def remotes
+      RemoteCollection.new(self)
     end
 
     def submodules
@@ -138,6 +139,10 @@ module Git
       else
         raise "error"
       end
+    end
+
+    def head=(head : String)
+      nerr(LibGit.repository_set_head(@value, head))
     end
 
     def head?
@@ -223,7 +228,7 @@ module Git
     end
 
     def tags(glob : String)
-      TagCollection.new(self, glob)
+      TagCollection.new(self).each(glob)
     end
 
     def walk(from : String | Oid, sorting : Sort = Sort::Time, &block)
