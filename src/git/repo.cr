@@ -164,12 +164,12 @@ module Git
       head
     end
 
-    @@oid_array = [] of Oid
-
+    @@oid_array = [] of String
     def each_id
+      @@oid_array = [] of String
       nerr(LibGit.repository_odb(out odb, @value))
       proc = -> (oid : LibGit::Oid*, payload : Void*) {
-        @@oid_array << Oid.new(oid.value)
+        @@oid_array << String.new(LibGit.oid_tostr_s(oid))
         return 0
       }
       nerr(LibGit.odb_foreach(odb, proc, Box.box(0)))
