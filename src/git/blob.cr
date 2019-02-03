@@ -37,5 +37,7 @@ module Git
     def self.lookup(r : Repo, oid : String)
       self.lookup(r, Oid.new(oid))
     end
+    def self.lookup(r : Repo, oid : Symbol)
+    end
   end
 end

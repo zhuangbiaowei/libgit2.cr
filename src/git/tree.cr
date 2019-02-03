@@ -52,7 +52,22 @@ module Git
     end
 
     def path(path : String)
-      raise "not implemented"
+      nerr(LibGit.tree_entry_bypath(out entry, @value, path))
+      name = String.new(LibGit.tree_entry_name(entry))
+      oid = String.new(LibGit.oid_tostr_s(LibGit.tree_entry_id(entry)))
+      filemode = LibGit.tree_entry_filemode(entry)
+      hash = {} of Symbol=>Symbol|String
+      case filemode
+      when LibGit::FilemodeT::FilemodeBlob
+        hash[:type] = :blob
+      when LibGit::FilemodeT::FilemodeTree
+        hash[:type] = :tree
+      when LibGit::FilemodeT::FilemodeCommit
+        hash[:type] = :commit
+      end
+      hash[:name] = name
+      hash[:oid] = oid
+      return hash
     end
 
     def [](idx : Int)

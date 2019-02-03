@@ -127,5 +127,22 @@ class RepoTest < Minitest::Test
       repo.head = "a65fedf39aefe402d3bb6e24df4d4f5fe4547750"
     end
   end
+
+  def test_access_a_file
+    sha = "a65fedf39aefe402d3bb6e24df4d4f5fe4547750"
+    blob = repo.blob_at(sha, "new.txt")
+    assert nil != blob
+    assert_equal "my new file\n", blob.as(Git::Blob).content
+  end
+
+  def test_access_a_missing_file
+    sha = "a65fedf39aefe402d3bb6e24df4d4f5fe4547750"
+    blob = repo.blob_at(sha, "file-not-found.txt")
+    assert_nil blob
+  end
+
+  def test_enumerate_all_objects
+    assert_equal 1700, repo.each_id.size
+  end
 end
 

@@ -76,6 +76,14 @@ module Git
     end
 
     def blob_at(revision, path)
+      tree = Git::Commit.lookup(self, revision).tree
+      begin
+        blob_data = tree.path(path)
+      rescue Git::Error
+        return nil
+      end
+      blob = Git::Blob.lookup(self, blob_data[:oid])
+      return blob
     end
 
     def fetch(remote_or_url, *args)
@@ -154,6 +162,25 @@ module Git
 
     def last_commit
       head
+    end
+
+    @@oid_array = [] of Oid
+
+    def each_id
+      nerr(LibGit.repository_odb(out odb, @value))
+      proc = -> (oid : LibGit::Oid*, payload : Void*) {
+        @@oid_array << Oid.new(oid.value)
+        return 0
+      }
+      nerr(LibGit.odb_foreach(odb, proc, Box.box(0)))
+      LibGit.odb_free(odb)
+      return @@oid_array
+    end
+
+    def each_id(&block)
+      self.each_id.each do |oid|
+        yield oid
+      end
     end
 
     def lookup(sha : String)
