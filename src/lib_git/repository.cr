@@ -22,6 +22,8 @@ lib LibGit
 
   fun repository_init_init_options = git_repository_init_init_options(opts : RepositoryInitOptions*, version : LibC::UInt) : LibC::Int
 
+  fun merge_base_many = git_merge_base_many(out : Oid*, repo : Repository, length : LibC::SizeT, input_array : Oid*) : LibC::Int
+
   # fun repository_init_ext = git_repository_init_ext(out : Repository*, repo_path : LibC::Char*, opts : RepositoryInitOptions*) : LibC::Int
   fun repository_head = git_repository_head(out : Reference*, repo : Repository) : LibC::Int
   # fun repository_head_detached = git_repository_head_detached(repo : Repository) : LibC::Int

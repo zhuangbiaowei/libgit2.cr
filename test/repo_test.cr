@@ -144,5 +144,50 @@ class RepoTest < Minitest::Test
   def test_enumerate_all_objects
     assert_equal 1700, repo.each_id.size
   end
+
+  def test_loading_alternates
+    alt_path = File.dirname(__FILE__) + "/fixtures/alternate/objects"
+    repo2 = Git::Repository.new(repo.path, {:alternates => [alt_path]})
+
+    assert_equal 1703, repo2.each_id.size
+    assert repo2.read("146ae76773c91e3b1d00cf7a338ec55ae58297e2")
+  end
+
+  #def test_alternates_with_invalid_path_type
+    #assert_raises Git::Error do
+    #  Git::Repository.new(repo.path, {:alternates => ["invalid_input"]})
+    #end
+  #end
+
+  def test_find_merge_base_between_oids
+    commit1 = "a4a7dce85cf63874e984719f4fdd239f5145052f"
+    commit2 = "a65fedf39aefe402d3bb6e24df4d4f5fe4547750"
+    base    = "c47800c7266a2be04c571c04d5a6614691ea99bd"
+    assert_equal base, repo.merge_base(commit1, commit2)
+  end
+
+  def test_find_merge_base_between_commits
+    commit1 = repo.lookup("a4a7dce85cf63874e984719f4fdd239f5145052f")
+    commit2 = repo.lookup("a65fedf39aefe402d3bb6e24df4d4f5fe4547750")
+    base    = "c47800c7266a2be04c571c04d5a6614691ea99bd"
+    assert_equal base, repo.merge_base(commit1, commit2)
+  end
+
+  def test_find_merge_base_between_ref_and_oid
+    commit1 = "a4a7dce85cf63874e984719f4fdd239f5145052f"
+    commit2 = "refs/heads/master"
+    base    = "c47800c7266a2be04c571c04d5a6614691ea99bd"
+    assert_equal base, repo.merge_base(commit1, commit2)
+  end
+
+  def test_find_merge_base_between_many
+    commit1 = "a4a7dce85cf63874e984719f4fdd239f5145052f"
+    commit2 = "refs/heads/packed"
+    commit3 = repo.lookup("a65fedf39aefe402d3bb6e24df4d4f5fe4547750")
+
+    base    = "c47800c7266a2be04c571c04d5a6614691ea99bd"
+    assert_equal base, repo.merge_base(commit1, commit2, commit3)
+  end
+
 end
 

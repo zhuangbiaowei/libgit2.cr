@@ -29,5 +29,6 @@ lib LibGit
   fun odb_object_size = git_odb_object_size(object : OdbObject) : LibC::SizeT
   fun odb_object_free = git_odb_object_free(object : OdbObject)
   fun odb_foreach = git_odb_foreach(db : Odb, cb : OdbForeachCb, payload : Void*) : LibC::Int
+  fun odb_add_disk_alternate = git_odb_add_disk_alternate(db : Odb, path : LibC::Char*) : LibC::Int
   alias OdbForeachCb = (Oid*, Void* -> LibC::Int)
 end

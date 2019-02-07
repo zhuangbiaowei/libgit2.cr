@@ -96,6 +96,16 @@ module Git
       nerr(LibGit.repository_open(out @value, @path), "Couldn't open repository at #{path}")
     end
 
+    def initialize(@path : String, options : Hash(Symbol,Array(String)))
+      nerr(LibGit.repository_open(out @value, @path), "Couldn't open repository at #{path}")
+      if options[:alternates]
+        LibGit.repository_odb(out odb, @value)
+        options[:alternates].each do |path|
+          nerr(LibGit.odb_add_disk_alternate(odb, path))
+        end
+      end
+    end
+
     def initialize(@value : LibGit::Repository, @path : String)
     end
 
@@ -181,6 +191,43 @@ module Git
       self.each_id.each do |oid|
         yield oid
       end
+    end
+
+    def merge_base(*args)
+      len = args.size
+      raise Error.new(0, "wrong number of arguments (#{len} for 2+)") if len<2
+      input_array = args.map {|id| self.get_oid(id)}.to_a
+      LibGit.merge_base_many(out base, @value, len, input_array.to_unsafe)
+      return String.new(LibGit.oid_tostr_s(pointerof(base)))
+    end
+
+    def get_oid(id) : LibGit::Oid
+      LibGit.oid_fromstr(out oid, "")
+      if id.class == String
+        id = id.to_s
+        if self.is_id(id)
+          LibGit.oid_fromstr(out oid1, id)
+          return oid1
+        else
+          ref = self.ref(id)
+          LibGit.oid_fromstr(out oid2, ref.oid)
+          return oid2
+        end
+      else
+        if id.class == Git::Commit
+          LibGit.oid_fromstr(out oid3, id.to_s)
+          return oid3
+        end
+      end
+      return oid
+    end
+
+    def is_id(id : String) : Bool
+      ret = false
+      if md = id.match(/[0-9a-f]*/)
+        ret = id.size == md[0].size
+      end
+      return ret
     end
 
     def lookup(sha : String)
