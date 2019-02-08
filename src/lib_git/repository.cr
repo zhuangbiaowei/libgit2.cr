@@ -20,9 +20,16 @@ lib LibGit
     origin_url : LibC::Char*
   end
 
+  struct OidArray
+    ids : Oid*
+    count : LibC::SizeT
+  end
+
   fun repository_init_init_options = git_repository_init_init_options(opts : RepositoryInitOptions*, version : LibC::UInt) : LibC::Int
 
   fun merge_base_many = git_merge_base_many(out : Oid*, repo : Repository, length : LibC::SizeT, input_array : Oid*) : LibC::Int
+  fun merge_bases_many = git_merge_bases_many(out : OidArray*, repo : Repository, length : LibC::SizeT, input_array : Oid*) : LibC::Int
+  fun graph_ahead_behind = git_graph_ahead_behind(ahead : LibC::SizeT*, behind : LibC::SizeT*, repo : Repository, local : Oid*, upstream : Oid*) : LibC::Int
 
   # fun repository_init_ext = git_repository_init_ext(out : Repository*, repo_path : LibC::Char*, opts : RepositoryInitOptions*) : LibC::Int
   fun repository_head = git_repository_head(out : Reference*, repo : Repository) : LibC::Int

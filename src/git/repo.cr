@@ -201,22 +201,28 @@ module Git
       return String.new(LibGit.oid_tostr_s(pointerof(base)))
     end
 
+    def merge_bases(*args)
+      len = args.size
+      raise Error.new(0, "wrong number of arguments (#{len} for 2+)") if len<2
+      input_array = args.map {|id| self.get_oid(id)}.to_a
+      LibGit.merge_bases_many(out bases, @value, len, input_array.to_unsafe)
+      ids = Slice(LibGit::Oid).new(bases.ids, bases.count).to_a
+      return ids.map { |id| String.new(LibGit.oid_tostr_s(pointerof(id)))}
+    end
+
     def get_oid(id) : LibGit::Oid
-      LibGit.oid_fromstr(out oid, "")
+      oid = LibGit::Oid.new
       if id.class == String
         id = id.to_s
         if self.is_id(id)
-          LibGit.oid_fromstr(out oid1, id)
-          return oid1
+          LibGit.oid_fromstr(pointerof(oid), id)
         else
           ref = self.ref(id)
-          LibGit.oid_fromstr(out oid2, ref.oid)
-          return oid2
+          LibGit.oid_fromstr(pointerof(oid), ref.oid)
         end
       else
         if id.class == Git::Commit
-          LibGit.oid_fromstr(out oid3, id.to_s)
-          return oid3
+          LibGit.oid_fromstr(pointerof(oid), id.to_s)
         end
       end
       return oid
@@ -321,6 +327,13 @@ module Git
 
     def finalize
       LibGit.repository_free(@value)
+    end
+
+    def ahead_behind(local, upstream)
+      local_id = self.get_oid(local)
+      upstream_id = self.get_oid(upstream)
+      LibGit.graph_ahead_behind(out ahead, out behind, self, pointerof(local_id), pointerof(upstream_id))
+      return ahead, behind 
     end
   end
 end
