@@ -28,6 +28,7 @@ module Git
       obj_len = LibGit.odb_object_size(obj)
       object = OdbObject.new(obj_type, obj_len, String.new(LibGit.odb_object_data(obj).as(UInt8*), obj_len))
       LibGit.odb_object_free(obj)
+      LibGit.odb_free(odb)
       return object
     end
 
@@ -195,7 +196,7 @@ module Git
 
     def merge_base(*args)
       len = args.size
-      raise Error.new(0, "wrong number of arguments (#{len} for 2+)") if len<2
+      raise "wrong number of arguments (#{len} for 2+)" if len<2
       input_array = args.map {|id| self.get_oid(id)}.to_a
       LibGit.merge_base_many(out base, @value, len, input_array.to_unsafe)
       return String.new(LibGit.oid_tostr_s(pointerof(base)))
@@ -203,7 +204,7 @@ module Git
 
     def merge_bases(*args)
       len = args.size
-      raise Error.new(0, "wrong number of arguments (#{len} for 2+)") if len<2
+      raise "wrong number of arguments (#{len} for 2+)" if len<2
       input_array = args.map {|id| self.get_oid(id)}.to_a
       LibGit.merge_bases_many(out bases, @value, len, input_array.to_unsafe)
       ids = Slice(LibGit::Oid).new(bases.ids, bases.count).to_a
@@ -334,6 +335,56 @@ module Git
       upstream_id = self.get_oid(upstream)
       LibGit.graph_ahead_behind(out ahead, out behind, self, pointerof(local_id), pointerof(upstream_id))
       return ahead, behind 
+    end
+
+    def expand_oids(ids : Array(String), type : String|Symbol = "")
+      if type.to_s == ""
+        return self.expand_oids(ids, [""], true)
+      else
+        return self.expand_oids(ids, [type], true)
+      end
+    end
+
+    def expand_oids(ids : Array(String), types : Array(String|Symbol), is_single = false)
+      expand_count = ids.size
+      if types.size != expand_count && is_single == false
+        raise Error.new(0,"the `object_type` array must be the same length as the `oids` array")
+      end
+
+      expand = Array(LibGit::OdbExpandId).new
+      expand_count.times do |i|
+        oid = LibGit::OdbExpandId.new
+        oid.id = self.get_oid(ids[i])
+        oid.length = ids[i].size
+        if types.empty?
+          oid.type = LibGit::ObjectT::ObjectAny
+        elsif types.size == 1
+          otype = Git::ODB.get_type(types.first?)
+          oid.type = otype
+        else
+          oid.type = Git::ODB.get_type(types[i].to_s)
+        end
+        expand << oid
+      end
+
+      LibGit.repository_odb(out odb, @value)
+      LibGit.odb_expand_ids(odb, expand.to_unsafe, expand_count)
+      ret = Hash(String, String).new
+      expand_count.times do |i|
+        if expand[i].length == 40
+          begin
+            ret[ids[i]] = Git::Oid.new(expand[i].id).to_s
+          rescue
+          end
+        end
+      end
+      return ret
+    end
+
+    def descendant_of?(commit : String|Git::Object, ancestor : String|Git::Object)
+      commit_oid = self.get_oid(commit)
+      ancestor_oid = self.get_oid(ancestor)
+      return LibGit.graph_descendant_of(@value, pointerof(commit_oid), pointerof(ancestor_oid)) == 1
     end
   end
 end

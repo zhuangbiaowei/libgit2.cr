@@ -19,6 +19,12 @@ lib LibGit
     ObjectRefDelta = 7
   end
 
+  struct OdbExpandId
+    id : Oid
+    length : LibC::UShort
+    type : ObjectT
+  end
+
   fun odb_new = git_odb_new(out : Odb*) : LibC::Int
   fun odb_free = git_odb_free(db : Odb)
   fun odb_exists = git_odb_exists(db : Odb, id : Oid*) : LibC::Int
@@ -31,4 +37,6 @@ lib LibGit
   fun odb_foreach = git_odb_foreach(db : Odb, cb : OdbForeachCb, payload : Void*) : LibC::Int
   fun odb_add_disk_alternate = git_odb_add_disk_alternate(db : Odb, path : LibC::Char*) : LibC::Int
   alias OdbForeachCb = (Oid*, Void* -> LibC::Int)
+
+  fun odb_expand_ids = git_odb_expand_ids(db : Odb, ids : OdbExpandId*, count : LibC::SizeT) : LibC::Int
 end

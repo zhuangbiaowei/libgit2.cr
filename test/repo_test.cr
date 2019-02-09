@@ -2,7 +2,7 @@ require "../src/git"
 require "./fixture_repo"
 require "minitest/autorun"
 
-class RepoTest < Minitest::Test
+class RepoyTest < Minitest::Test
   def setup
     @repo = FixtureRepo.from_libgit2 "testrepo.git"
   end
@@ -242,6 +242,44 @@ class RepoTest < Minitest::Test
     )
     assert_equal 1, ahead
     assert_equal 2, behind
+  end
+
+  def test_expand_objects
+    expected = {
+      "a4a7dce8" => "a4a7dce85cf63874e984719f4fdd239f5145052f",
+      "a65fedf3" => "a65fedf39aefe402d3bb6e24df4d4f5fe4547750",
+      "c47800c7" => "c47800c7266a2be04c571c04d5a6614691ea99bd"
+    }
+
+    assert_equal expected, repo.expand_oids(["a4a7dce8", "a65fedf3", "c47800c7", "deadbeef"])
+  end
+
+  def test_expand_and_filter_objects
+    assert_equal 2, repo.expand_oids(["a4a7dce8", "1385f264af"]).size
+    assert_equal 1, repo.expand_oids(["a4a7dce8", "1385f264af"], :commit).size
+    assert_equal 2, repo.expand_oids(["a4a7dce8", "1385f264af"], ["commit", "blob"]).size
+    assert_equal 1, repo.expand_oids(["a4a7dce8", "1385f264af"], [:commit, :tag]).size
+
+    assert_raises Git::Error do
+      repo.expand_oids(["a4a7dce8", "1385f264af"], [:commit, :tag, :commit]).size
+    end
+
+    assert_raises Git::Error do
+      repo.expand_oids(["a4a7dce8", "1385f264af"], [:commit]).size
+    end
+  end
+
+  def test_descendant_of
+    # String commit OIDs
+    assert repo.descendant_of?("a65fedf39aefe402d3bb6e24df4d4f5fe4547750", "be3563ae3f795b2b4353bcce3a527ad0a4f7f644")
+    assert !repo.descendant_of?("be3563ae3f795b2b4353bcce3a527ad0a4f7f644", "a65fedf39aefe402d3bb6e24df4d4f5fe4547750")
+
+    # Rugged::Commit instances
+    commit = repo.lookup("a65fedf39aefe402d3bb6e24df4d4f5fe4547750")
+    ancestor = repo.lookup("be3563ae3f795b2b4353bcce3a527ad0a4f7f644")
+
+    assert repo.descendant_of?(commit, ancestor)
+    assert !repo.descendant_of?(ancestor, commit)
   end
 end
 
