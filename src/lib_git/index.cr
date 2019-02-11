@@ -32,4 +32,5 @@ lib LibGit
   fun index_iterator_free = git_index_iterator_free(iterator : IndexIterator)
   fun index_clear = git_index_clear(index : Index) : LibC::Int
   fun index_remove = git_index_remove(index : Index, path : LibC::Char*, stage : LibC::Int) : LibC::Int
+  fun index_remove_directory = git_index_remove_directory(index : Index, dir : LibC::Char*, stage : LibC::Int) : LibC::Int
 end

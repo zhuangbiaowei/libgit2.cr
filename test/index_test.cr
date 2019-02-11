@@ -21,7 +21,7 @@ class IndexTest < Minitest::Test
   end
 
   def setup
-    path = File.dirname(__FILE__) + "/fixtures/testrepo.git/index"
+    path = File.dirname(__FILE__) + "/fixtures/index-repo.git/index"
     @index = Git::Index.new(path)
   end
 
@@ -39,7 +39,7 @@ class IndexTest < Minitest::Test
   end
 
   def test_index_size
-    assert_equal 109, index.count
+    assert_equal 2, index.count
   end
 
   def test_empty_index
@@ -48,8 +48,19 @@ class IndexTest < Minitest::Test
   end
 
   def test_remove_entries
-    index.remove "COPYING"
-    assert_equal 108, index.count
+    index.remove "new.txt"
+    assert_equal 1, index.count
+  end
+
+  def test_remove_dir
+    index.remove_dir "does-not-exist"
+    assert_equal 2, index.count
+
+    index.remove_dir "", 2
+    assert_equal 2, index.count
+
+    index.remove_dir ""
+    assert_equal 0, index.count
   end
 
 end

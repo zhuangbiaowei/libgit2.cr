@@ -33,6 +33,9 @@ module Git
     def remove(path : String, stage = 0)
       LibGit.index_remove(@value, path, stage)
     end
+    def remove_dir(path : String, stage = 0)
+      LibGit.index_remove_directory(@value, path, stage)
+    end
   end
 
   class IndexIterator < NoError
