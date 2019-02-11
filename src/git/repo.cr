@@ -388,5 +388,10 @@ module Git
       self.lookup_commit Git::Oid.new(ancestor_oid)
       return LibGit.graph_descendant_of(@value, pointerof(commit_oid), pointerof(ancestor_oid)) == 1
     end
+
+    def merge_commits(our_commit : String, their_commit : String) : Git::Index
+      LibGit.merge_commits(out index, @value, self.lookup_commit(our_commit), self.lookup_commit(their_commit), nil)
+      return Git::Index.new(index)
+    end
   end
 end

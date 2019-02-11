@@ -63,4 +63,29 @@ class IndexTest < Minitest::Test
     assert_equal 0, index.count
   end
 
+  def test_get_entry_data
+    e = index[0]
+    assert_equal "README", e[:path]
+    assert_equal "1385f264afb75a56a5bec74243be9b367ba4ca08", e[:oid]
+    assert_equal 1273360380, e[:mtime].as(Time).to_unix
+    assert_equal 1273360380, e[:ctime].as(Time).to_unix
+    assert_equal 4, e[:file_size]
+    assert_equal 234881026, e[:dev]
+    assert_equal 6674088, e[:ino]
+    assert_equal 33188, e[:mode]
+    assert_equal 501, e[:uid]
+    assert_equal 0, e[:gid]
+    assert_equal false, e[:valid]
+    assert_equal 0, e[:stage]
+
+    e = index[1]
+    assert_equal "new.txt", e[:path]
+    assert_equal "fa49b077972391ad58037050f2a75f74e3671e92", e[:oid]
+  end
+
+  def test_iterate_entries
+    itr_test = index.sort { |a, b| a[:oid].to_s <=> b[:oid].to_s }.map { |e| e[:path] }.join(':')
+    assert_equal "README:new.txt", itr_test
+  end
+
 end

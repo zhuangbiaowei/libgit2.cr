@@ -33,4 +33,7 @@ lib LibGit
   fun index_clear = git_index_clear(index : Index) : LibC::Int
   fun index_remove = git_index_remove(index : Index, path : LibC::Char*, stage : LibC::Int) : LibC::Int
   fun index_remove_directory = git_index_remove_directory(index : Index, dir : LibC::Char*, stage : LibC::Int) : LibC::Int
+  fun index_get_byindex = git_index_get_byindex(index : Index, n : LibC::SizeT) : IndexEntry*
+  fun index_get_bypath = git_index_get_bypath(index : Index, path : LibC::Char*, stage : LibC::Int) : IndexEntry*
+  fun index_has_conflicts = git_index_has_conflicts(index : Index) : LibC::Int
 end
