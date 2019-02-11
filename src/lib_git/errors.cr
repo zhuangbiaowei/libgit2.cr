@@ -34,5 +34,5 @@ lib LibGit
     klass : LibC::Int
   end
 
-  fun err_last = giterr_last : Error
+  fun err_last = git_error_last : Error
 end

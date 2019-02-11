@@ -32,6 +32,42 @@ lib LibGit
   fun graph_ahead_behind = git_graph_ahead_behind(ahead : LibC::SizeT*, behind : LibC::SizeT*, repo : Repository, local : Oid*, upstream : Oid*) : LibC::Int
   fun graph_descendant_of = git_graph_descendant_of(repo : Repository, commit : Oid*, ancestor : Oid*) : LibC::Int
 
+  struct MergeOptions
+    version : LibC::UInt
+    flags : MergeFlagT
+    rename_threshold : LibC::UInt
+    target_limit : LibC::UInt
+    metric : DiffSimilarityMetric*
+    recursion_limit : LibC::UInt
+    default_driver : LibC::Char*
+    file_favor : MergeFileFavorT
+    file_flags : MergeFileFlagT
+  end
+  enum MergeFlagT
+    MergeFindRenames = 1
+    MergeFailOnConflict = 2
+    MergeSkipReuc = 4
+    MergeNoRecursive = 8
+  end
+  enum MergeFileFavorT
+    MergeFileFavorNormal = 0
+    MergeFileFavorOurs = 1
+    MergeFileFavorTheirs = 2
+    MergeFileFavorUnion = 3
+  end
+  enum MergeFileFlagT
+    MergeFileDefault = 0
+    MergeFileStyleMerge = 1
+    MergeFileStyleDiff3 = 2
+    MergeFileSimplifyAlnum = 4
+    MergeFileIgnoreWhitespace = 8
+    MergeFileIgnoreWhitespaceChange = 16
+    MergeFileIgnoreWhitespaceEol = 32
+    MergeFileDiffPatience = 64
+    MergeFileDiffMinimal = 128
+  end
+  fun merge_commits = git_merge_commits(out : Index*, repo : Repository, our_commit : Commit, their_commit : Commit, opts : MergeOptions*) : LibC::Int
+
   # fun repository_init_ext = git_repository_init_ext(out : Repository*, repo_path : LibC::Char*, opts : RepositoryInitOptions*) : LibC::Int
   fun repository_head = git_repository_head(out : Reference*, repo : Repository) : LibC::Int
   # fun repository_head_detached = git_repository_head_detached(repo : Repository) : LibC::Int

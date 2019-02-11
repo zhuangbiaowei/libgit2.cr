@@ -384,6 +384,8 @@ module Git
     def descendant_of?(commit : String|Git::Object, ancestor : String|Git::Object)
       commit_oid = self.get_oid(commit)
       ancestor_oid = self.get_oid(ancestor)
+      self.lookup_commit Git::Oid.new(commit_oid)
+      self.lookup_commit Git::Oid.new(ancestor_oid)
       return LibGit.graph_descendant_of(@value, pointerof(commit_oid), pointerof(ancestor_oid)) == 1
     end
   end

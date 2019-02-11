@@ -281,5 +281,41 @@ class RepoyTest < Minitest::Test
     assert repo.descendant_of?(commit, ancestor)
     assert !repo.descendant_of?(ancestor, commit)
   end
+
+  def test_descendant_of_bogus_args
+    # non-existent commit
+    assert_raises Git::Error do
+      repo.descendant_of?("deadbeef" * 5, "a65fedf39aefe402d3bb6e24df4d4f5fe4547750")
+    end
+
+    # non-existent ancestor
+    assert_raises Git::Error do
+      repo.descendant_of?("a65fedf39aefe402d3bb6e24df4d4f5fe4547750", "deadbeef" * 5)
+    end
+
+    # tree OID as the commit
+    assert_raises Git::Error do
+      repo.descendant_of?("181037049a54a1eb5fab404658a3a250b44335d7", "be3563ae3f795b2b4353bcce3a527ad0a4f7f644")
+    end
+
+    # tree OID as the ancestor
+    assert_raises Git::Error do
+      repo.descendant_of?("be3563ae3f795b2b4353bcce3a527ad0a4f7f644", "181037049a54a1eb5fab404658a3a250b44335d7")
+    end
+  end
 end
 
+class MergeCommitsRepositoryTest < Minitest::Test
+  def setup
+    @repo = FixtureRepo.from_libgit2("merge-resolve")
+  end
+
+  def repo
+    @repo.as(Git::Repository)
+  end
+
+  def test_merge_commits
+    #puts repo.branches["master"].target_id
+    #puts repo.branches["branch"].target_id
+  end
+end

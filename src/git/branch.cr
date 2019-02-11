@@ -17,7 +17,7 @@ module Git
     end
 
     def [](name)
-      nerr(LibGit.reference_lookup(out ref, @repo, name))
+      nerr(LibGit.branch_lookup(out ref, @repo, name, LibGit::BranchT::All))
       Branch.new(ref)
     end
 
