@@ -10,13 +10,13 @@ class IndexTest < Minitest::Test
         :oid => "d385f264afb75a56a5bec74243be9b367ba4ca08",
         :mtime => now,
         :ctime => now,
-        :file_size => 1000,
-        :dev => 234881027,
-        :ino => 88888,
-        :mode => 33188,
-        :uid => 502,
-        :gid => 502,
-        :stage => 3,
+        :file_size => 1000_u32,
+        :dev => 234881027_u32,
+        :ino => 88888_u32,
+        :mode => 33188_u32,
+        :uid => 502_u32,
+        :gid => 502_u32,
+        :stage => 3_u32,
       }
   end
 
@@ -88,4 +88,32 @@ class IndexTest < Minitest::Test
     assert_equal "README:new.txt", itr_test
   end
 
+  def test_update_entries
+    now = Time.unix(Time.now.to_unix)
+    e = index[0]
+
+    e[:oid] = "12ea3153a78002a988bb92f4123e7e831fd1138a"
+    e[:mtime] = now
+    e[:ctime] = now
+    e[:file_size] = 1000_u32
+    e[:dev] = 234881027
+    e[:ino] = 88888
+    e[:mode] = 33188_u32
+    e[:uid] = 502_u32
+    e[:gid] = 502_u32
+    e[:stage] = 3_u32
+
+    index.add(e)
+    new_e = index.get e[:path].to_s, 3
+
+    assert_equal e, new_e
+  end
+
+  def test_add_new_entries
+    e = IndexTest.new_index_entry
+    index << e
+    assert_equal 3, index.count
+    itr_test = index.sort { |a, b| a[:oid].to_s <=> b[:oid].to_s }.map { |x| x[:path] }.join(':')
+    assert_equal "README:new_path:new.txt", itr_test
+  end
 end

@@ -1,5 +1,9 @@
 module Git
   class Index < C_Pointer
+    GIT_IDXENTRY_STAGEMASK = 0x3000
+    GIT_IDXENTRY_VALID = 0x8000
+    GIT_IDXENTRY_STAGESHIFT = 12
+
     @value : LibGit::Index
     def initialize(path : String)
       nerr(LibGit.index_open(out @value, path))
@@ -65,9 +69,41 @@ module Git
         :mode => ie.mode,
         :uid => ie.uid,
         :gid => ie.gid,
-        :valid => (ie.flags & 0x8000)!=0,
-        :stage => (ie.flags & 0x3000) >> 12
+        :valid => (ie.flags & Index::GIT_IDXENTRY_VALID)!=0,
+        :stage => (ie.flags & Index::GIT_IDXENTRY_STAGEMASK) >> Index::GIT_IDXENTRY_STAGESHIFT
       }
+    end
+    def to_index_entry(entry : HashEntry)
+      index_entry = LibGit::IndexEntry.new
+      index_entry.path = entry[:path].to_s.to_slice.to_unsafe
+      index_entry.id = Git::Oid.new(entry[:oid].to_s)
+      mt = LibGit::IndexTime.new
+      mt.seconds = entry[:mtime].as(Time).to_unix
+      mt.nanoseconds = mt.seconds * 1000
+      index_entry.mtime = mt
+      ct = LibGit::IndexTime.new
+      ct.seconds = entry[:ctime].as(Time).to_unix
+      ct.nanoseconds = ct.seconds * 1000
+      index_entry.ctime = ct
+      index_entry.file_size = entry[:file_size].as(UInt32)
+      index_entry.dev = entry[:dev].as(UInt32)
+      index_entry.ino = entry[:ino].as(UInt32)
+      index_entry.mode = entry[:mode].as(UInt32)
+      index_entry.uid = entry[:uid].as(UInt32)
+      index_entry.gid = entry[:gid].as(UInt32)
+      index_entry.flags = 0x0
+      index_entry.flags_extended = 0x0
+      if entry[:stage]?
+        index_entry.flags &= ~Index::GIT_IDXENTRY_STAGEMASK
+        index_entry.flags |= (entry[:stage].as(UInt32) << Index::GIT_IDXENTRY_STAGESHIFT) & Index::GIT_IDXENTRY_STAGEMASK
+      end
+      if entry[:valid]?
+        index_entry.flags &= ~Index::GIT_IDXENTRY_VALID
+        if entry[:valid]
+          index_entry.flags |= Index::GIT_IDXENTRY_VALID
+        end
+      end
+      return index_entry
     end
     def [](point : Int32)
       self.get_index_entry(LibGit.index_get_byindex(@value, point).value)
@@ -75,8 +111,21 @@ module Git
     def [](path : String, stage = 0)
       self.get_index_entry(LibGit.index_get_bypath(@value, path, stage).value)
     end
+    def get(point : Int32)
+      self[point]
+    end
+    def get(path : String, stage = 0)
+      self[path,stage]
+    end
     def conflicts?
       LibGit.index_has_conflicts(@value)==1
+    end
+    def add(entry : HashEntry)
+      ie = self.to_index_entry(entry)
+      LibGit.index_add(@value, pointerof(ie))
+    end
+    def <<(entry : HashEntry)
+      self.add(entry)
     end
   end
 

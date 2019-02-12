@@ -36,4 +36,6 @@ lib LibGit
   fun index_get_byindex = git_index_get_byindex(index : Index, n : LibC::SizeT) : IndexEntry*
   fun index_get_bypath = git_index_get_bypath(index : Index, path : LibC::Char*, stage : LibC::Int) : IndexEntry*
   fun index_has_conflicts = git_index_has_conflicts(index : Index) : LibC::Int
+  fun index_add = git_index_add(index : Index, source_entry : IndexEntry*) : LibC::Int
+  fun index_add_bypath = git_index_add_bypath(index : Index, path : LibC::Char*) : LibC::Int
 end
