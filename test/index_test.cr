@@ -117,3 +117,84 @@ class IndexTest < Minitest::Test
     assert_equal "README:new_path:new.txt", itr_test
   end
 end
+
+
+class IndexWriteTest < Minitest::Test
+  @tmp_path = ""
+  def index
+    @index.as(Git::Index)
+  end
+  def setup
+    path = File.dirname(__FILE__) + "/fixtures/index-repo.git/index"
+    @tmp_path = File.tempname + "-test.index"
+    tmpfile = File.new(@tmp_path, "w", encoding: "binary")
+    tmpfile.write(File.read(path).to_slice)
+    tmpfile.close
+    @index = Git::Index.new(@tmp_path)
+  end
+
+  def teardown
+    File.delete(@tmp_path)
+  end
+
+  def test_can_write_index
+    e = IndexTest.new_index_entry
+    index << e
+
+    e[:path] = "else.txt"
+    index << e
+
+    index.write
+
+    index2 = Git::Index.new(@tmp_path)
+
+    itr_test = index2.sort { |a, b| a[:oid].to_s <=> b[:oid].to_s }.map { |x| x[:path] }.join(':')
+    assert_equal "README:else.txt:new_path:new.txt", itr_test
+    assert_equal 4, index2.count
+  end
+end
+
+class IndexWorkdirTest < Minitest::Test
+  def setup
+    @repo = FixtureRepo.empty
+  end
+  def repo
+    @repo.as(Git::Repository)
+  end
+  def index
+    repo.index
+  end
+
+  def test_adding_a_path
+    File.open(File.join(repo.workdir, "test.txt"), "w") do |f|
+      f.puts "test content"
+    end
+    index.add("test.txt")
+    index.write
+
+    index2 = Git::Index.new(File.join(repo.workdir, ".git", "index"))
+    assert_equal index2[0][:path], "test.txt"
+  end
+
+  def test_reloading_index
+    File.open(File.join(repo.workdir, "test.txt"), "w") do |f|
+      f.puts "test content"
+    end
+    index.add("test.txt")
+    index.write
+
+    rindex = Git::Index.new(File.join(repo.workdir, ".git", "index"))
+    e = rindex["test.txt"]
+    assert_equal 0, e[:stage]
+
+    rindex << IndexTest.new_index_entry
+    rindex.write
+
+    assert_equal 1, index.count
+    index.reload
+    assert_equal 2, index.count
+
+    e = index.get "new_path", 3
+    assert_equal e[:mode], 33188
+  end
+end

@@ -9,6 +9,12 @@ module FixtureRepo
     return Git::Repository.open(path)
   end
 
+  def self.empty
+    path = "./test/test-empty"
+    `rm -rf #{path}` if Dir.exists?(path)
+    repo = Git::Repository.init_at(path)
+  end
+
   def self.prepare(path)
     Dir.cd(path) do
       File.rename(".gitted", ".git") if File.exists?(".gitted")

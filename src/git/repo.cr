@@ -393,5 +393,13 @@ module Git
       LibGit.merge_commits(out index, @value, self.lookup_commit(our_commit), self.lookup_commit(their_commit), nil)
       return Git::Index.new(index)
     end
+
+    def index
+      LibGit.repository_index(out index, @value)
+      return Git::Index.new(index)
+    end
+    def workdir
+      String.new(LibGit.repository_workdir(@value))
+    end
   end
 end

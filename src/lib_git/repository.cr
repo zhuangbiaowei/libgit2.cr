@@ -67,6 +67,8 @@ lib LibGit
     MergeFileDiffMinimal = 128
   end
   fun merge_commits = git_merge_commits(out : Index*, repo : Repository, our_commit : Commit, their_commit : Commit, opts : MergeOptions*) : LibC::Int
+  fun repository_index = git_repository_index(out : Index*, repo : Repository) : LibC::Int
+  fun repository_workdir = git_repository_workdir(repo : Repository) : LibC::Char*
 
   # fun repository_init_ext = git_repository_init_ext(out : Repository*, repo_path : LibC::Char*, opts : RepositoryInitOptions*) : LibC::Int
   fun repository_head = git_repository_head(out : Reference*, repo : Repository) : LibC::Int
@@ -74,14 +76,12 @@ lib LibGit
   # fun repository_head_unborn = git_repository_head_unborn(repo : Repository) : LibC::Int
   # fun repository_is_empty = git_repository_is_empty(repo : Repository) : LibC::Int
   # fun repository_path = git_repository_path(repo : Repository) : LibC::Char*
-  # fun repository_workdir = git_repository_workdir(repo : Repository) : LibC::Char*
   # fun repository_set_workdir = git_repository_set_workdir(repo : Repository, workdir : LibC::Char*, update_gitlink : LibC::Int) : LibC::Int
   fun repository_is_bare = git_repository_is_bare(repo : Repository) : LibC::Int
   # fun repository_config = git_repository_config(out : X_Config*, repo : Repository) : LibC::Int
   # fun repository_config_snapshot = git_repository_config_snapshot(out : X_Config*, repo : Repository) : LibC::Int
   fun repository_odb = git_repository_odb(out : Odb*, repo : Repository) : LibC::Int
   # fun repository_refdb = git_repository_refdb(out : X_Refdb*, repo : Repository) : LibC::Int
-  # fun repository_index = git_repository_index(out : X_Index*, repo : Repository) : LibC::Int
   # fun repository_message = git_repository_message(out : Buf*, repo : Repository) : LibC::Int
   # fun repository_message_remove = git_repository_message_remove(repo : Repository) : LibC::Int
   # fun repository_state_cleanup = git_repository_state_cleanup(repo : Repository) : LibC::Int

@@ -124,8 +124,17 @@ module Git
       ie = self.to_index_entry(entry)
       LibGit.index_add(@value, pointerof(ie))
     end
+    def add(path : String)
+      LibGit.index_add_bypath(@value, path)
+    end
     def <<(entry : HashEntry)
       self.add(entry)
+    end
+    def write
+      LibGit.index_write(@value)
+    end
+    def reload
+      LibGit.index_read(@value, 0)
     end
   end
 

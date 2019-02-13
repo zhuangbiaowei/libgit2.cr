@@ -38,4 +38,6 @@ lib LibGit
   fun index_has_conflicts = git_index_has_conflicts(index : Index) : LibC::Int
   fun index_add = git_index_add(index : Index, source_entry : IndexEntry*) : LibC::Int
   fun index_add_bypath = git_index_add_bypath(index : Index, path : LibC::Char*) : LibC::Int
+  fun index_write = git_index_write(index : Index) : LibC::Int
+  fun index_read = git_index_read(index : Index, force : LibC::Int) : LibC::Int
 end
