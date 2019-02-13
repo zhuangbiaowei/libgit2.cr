@@ -336,3 +336,15 @@ class MergeCommitsRepositoryTest < Minitest::Test
     assert index.conflicts?
   end
 end
+
+class ShallowRepositoryTest < Minitest::Test
+  def setup
+    @repo = FixtureRepo.from_libgit2("testrepo.git")
+    @shallow_repo = FixtureRepo.from_libgit2("shallow.git")
+  end
+
+  def test_is_shallow
+    assert !@repo.as(Git::Repo).shallow?
+    assert @shallow_repo.as(Git::Repo).shallow?
+  end
+end

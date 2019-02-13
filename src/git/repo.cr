@@ -401,5 +401,8 @@ module Git
     def workdir
       String.new(LibGit.repository_workdir(@value))
     end
+    def shallow?
+      LibGit.repository_is_shallow(@value)==1
+    end
   end
 end
