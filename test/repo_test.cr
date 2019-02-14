@@ -4,7 +4,7 @@ require "minitest/autorun"
 
 class RepoyTest < Minitest::Test
   def setup
-    @repo = FixtureRepo.from_libgit2 "testrepo.git"
+    @repo = FixtureRepo.from_libgit2("testrepo.git")
   end
 
   def repo : Git::Repository
@@ -346,5 +346,11 @@ class ShallowRepositoryTest < Minitest::Test
   def test_is_shallow
     assert !@repo.as(Git::Repo).shallow?
     assert @shallow_repo.as(Git::Repo).shallow?
+  end
+end
+
+class RepositoryWriteTest < Minitest::Test
+  def setup
+    @source_repo = FixtureRepo.from_rugged("testrepo.git")
   end
 end
