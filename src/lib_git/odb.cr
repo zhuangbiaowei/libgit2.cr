@@ -39,4 +39,10 @@ lib LibGit
   alias OdbForeachCb = (Oid*, Void* -> LibC::Int)
 
   fun odb_expand_ids = git_odb_expand_ids(db : Odb, ids : OdbExpandId*, count : LibC::SizeT) : LibC::Int
+  fun odb_hash = git_odb_hash(out : Oid*, data : Void*, len : LibC::SizeT, type : ObjectT) : LibC::Int
+
+  fun odb_open_wstream = git_odb_open_wstream(out : OdbStream**, db : Odb, size : OffT, type : ObjectT) : LibC::Int
+  fun odb_stream_write = git_odb_stream_write(stream : OdbStream*, buffer : LibC::Char*, len : LibC::SizeT) : LibC::Int
+  fun odb_stream_finalize_write = git_odb_stream_finalize_write(out : Oid*, stream : OdbStream*) : LibC::Int
+  fun odb_stream_free = git_odb_stream_free(stream : OdbStream*)
 end

@@ -2,6 +2,16 @@
 lib LibGit
   type Commit = Void*
 
+  struct CommitData
+    update_ref : LibC::Char*
+    message : LibC::Char*
+    tree : Tree
+    author : Signature
+    committer : Signature
+    parent_count : LibC::SizeT
+    parents : Commit*
+  end
+
   fun commit_lookup = git_commit_lookup(commit : Commit*, repo : Repository, id : Oid*) : LibC::Int
   fun commit_lookup_prefix = git_commit_lookup_prefix(commit : Commit*, repo : Repository, id : Oid*, len : LibC::SizeT) : LibC::Int
   fun commit_free = git_commit_free(commit : Commit)

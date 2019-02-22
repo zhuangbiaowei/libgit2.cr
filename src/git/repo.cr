@@ -61,9 +61,11 @@ module Git
     end
 
     def rev_parse(spec)
+      Git::Object.rev_parse(@value, spec, 1).as(Git::Object)
     end
 
     def rev_parse_oid(spec)
+      Git::Object.rev_parse(@value, spec, 0).as(String)
     end
 
     def remotes
@@ -108,6 +110,10 @@ module Git
     end
 
     def initialize(@value : LibGit::Repository, @path : String)
+    end
+
+    def value
+      @value
     end
 
     def self.open(path : String)
@@ -198,17 +204,25 @@ module Git
       len = args.size
       raise "wrong number of arguments (#{len} for 2+)" if len<2
       input_array = args.map {|id| self.get_oid(id)}.to_a
-      LibGit.merge_base_many(out base, @value, len, input_array.to_unsafe)
-      return String.new(LibGit.oid_tostr_s(pointerof(base)))
+      err = LibGit.merge_base_many(out base, @value, len, input_array.to_unsafe)
+      if err == 0
+        return String.new(LibGit.oid_tostr_s(pointerof(base)))
+      else
+        return nil
+      end
     end
 
     def merge_bases(*args)
       len = args.size
       raise "wrong number of arguments (#{len} for 2+)" if len<2
       input_array = args.map {|id| self.get_oid(id)}.to_a
-      LibGit.merge_bases_many(out bases, @value, len, input_array.to_unsafe)
-      ids = Slice(LibGit::Oid).new(bases.ids, bases.count).to_a
-      return ids.map { |id| String.new(LibGit.oid_tostr_s(pointerof(id)))}
+      err = LibGit.merge_bases_many(out bases, @value, len, input_array.to_unsafe)
+      if err == 0
+        ids = Slice(LibGit::Oid).new(bases.ids, bases.count).to_a
+        return ids.map { |id| String.new(LibGit.oid_tostr_s(pointerof(id)))}
+      else
+        return [] of String
+      end
     end
 
     def get_oid(id) : LibGit::Oid
@@ -403,6 +417,21 @@ module Git
     end
     def shallow?
       LibGit.repository_is_shallow(@value)==1
+    end
+
+    def self.hash_data(content : String, type : String)
+      LibGit.odb_hash(out oid, content.to_slice.to_unsafe, content.size, Git::ODB.get_type(type))
+      Git::Oid.new(oid).to_s
+    end
+
+    def write(content : String, type : String)
+      LibGit.repository_odb(out odb, @value)
+      nerr(LibGit.odb_open_wstream(out stream, odb, content.size, Git::ODB.get_type(type)))
+      LibGit.odb_free(odb)
+      nerr(LibGit.odb_stream_write(stream, content.to_slice.to_unsafe, content.size))
+      nerr(LibGit.odb_stream_finalize_write(out oid, stream))
+      LibGit.odb_stream_free(stream)
+      Git::Oid.new(oid).to_s
     end
   end
 end

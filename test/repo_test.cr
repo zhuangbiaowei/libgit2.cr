@@ -352,5 +352,37 @@ end
 class RepositoryWriteTest < Minitest::Test
   def setup
     @source_repo = FixtureRepo.from_rugged("testrepo.git")
+    @repo = FixtureRepo.clone(@source_repo)
   end
+  def repo
+    @repo.as(Git::Repo)
+  end
+  TEST_CONTENT = "my test data\n"
+  TEST_CONTENT_TYPE = "blob"
+
+  def test_can_hash_data
+    oid = Git::Repo.hash_data(TEST_CONTENT, TEST_CONTENT_TYPE)
+    assert_equal "76b1b55ab653581d6f2c7230d34098e837197674", oid
+  end
+
+  def test_write_to_odb
+    oid = repo.write(TEST_CONTENT, TEST_CONTENT_TYPE)
+    assert_equal "76b1b55ab653581d6f2c7230d34098e837197674", oid
+    assert repo.exists?("76b1b55ab653581d6f2c7230d34098e837197674")
+  end
+
+  def test_no_merge_base_between_unrelated_branches
+    info = repo.rev_parse("HEAD").to_hash.as(Git::HashCommit)
+    info[:parents] = [] of String
+    baseless = Git::Commit.create(repo, info)
+    assert_nil repo.merge_base("HEAD", baseless)
+  end
+
+  def test_no_merge_bases_between_unrelated_branches
+    info = repo.rev_parse("HEAD").to_hash.as(Git::HashCommit)
+    info[:parents] = [] of String
+    baseless = Git::Commit.create(repo, info)
+    assert_equal [] of String,  repo.merge_bases("HEAD", baseless)
+  end
+
 end

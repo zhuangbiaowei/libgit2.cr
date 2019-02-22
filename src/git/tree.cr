@@ -2,7 +2,7 @@ require "./object"
 
 module Git
   alias TreewalkMode = LibGit::TreewalkMode
-
+  alias TreeEntryHash = Hash(Symbol, String|UInt32|Symbol)
   class TreeEntry < C_Pointer
     @value : LibGit::TreeEntry
 
@@ -22,8 +22,33 @@ module Git
       LibGit.tree_entry_type(@value)
     end
 
+    def type_symbol
+
+      case self.filemode
+      when LibGit::FilemodeT::FilemodeTree
+        return :tree
+      when LibGit::FilemodeT::FilemodeBlob
+        return :blob
+      when LibGit::FilemodeT::FilemodeLink
+        return :link
+      when LibGit::FilemodeT::FilemodeCommit
+        return :commit
+      else
+        return :unreadable
+      end
+    end
+
     def finalize
       # LibGit.tree_entry_free(@value)
+    end
+
+    def to_hash
+      hash = TreeEntryHash.new
+      hash[:name]=self.name
+      hash[:oid]=self.oid.to_s
+      hash[:filemode]=self.filemode.to_u32
+      hash[:type]=self.type_symbol
+      return hash
     end
   end
 
@@ -34,6 +59,10 @@ module Git
 
     def size
       LibGit.tree_entrycount(@value)
+    end
+
+    def value
+      @value
     end
 
     def size_recursive
@@ -151,6 +180,18 @@ module Git
 
     def finalize
       LibGit.tree_free(@value)
+    end
+
+    def to_hash
+      arr = Array(TreeEntryHash).new
+      self.each do |i|
+        arr << i.to_hash
+      end
+      return arr
+    end
+
+    def self.parse_data(repo : Repo, data : String)
+      return repo.lookup_tree(data).value
     end
   end
 end

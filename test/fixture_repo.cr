@@ -34,7 +34,7 @@ module FixtureRepo
   def self.clone(repo)
     path = "./test/test-clone"
     `rm -rf #{path}` if Dir.exists?(path)
-    `git clone --quiet -- #{repo.path} #{path}`
+    `git clone --quiet -- #{repo.as(Git::Repo).path} #{path}`
     Git::Repo.new(path)
   end
 end

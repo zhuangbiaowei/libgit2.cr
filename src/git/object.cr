@@ -38,5 +38,24 @@ module Git
         raise "Invalid object type"
       end
     end
+
+    def self.create_oid(obj : LibGit::Object)
+      str = " " * 40
+      LibGit.oid_fmt(str.to_slice.to_unsafe, LibGit.object_id(obj))
+      return str
+    end
+    
+    def self.rev_parse(repo : LibGit::Repository, spec : String, as_obj = 1)
+      nerr(LibGit.revparse_single(out object, repo, spec))
+      if as_obj == 1
+        return self.new(object)
+      end
+      ret = self.create_oid(object)
+      LibGit.object_free(object)
+      return ret
+    end
+
+    def to_hash
+    end
   end
 end

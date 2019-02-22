@@ -22,4 +22,5 @@ lib LibGit
   fun object_type = git_object_type(obj : Object) : OType
   fun object_owner = git_object_owner(obj : Object) : Repository
   fun object_free = git_object_free(obj : Object)
+  fun revparse_single = git_revparse_single(out : Object*, repo : Repository, spec : LibC::Char*) : LibC::Int
 end
