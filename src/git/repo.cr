@@ -326,6 +326,11 @@ module Git
       TagCollection.new(self).each(glob)
     end
 
+    def config
+      LibGit.repository_config(out config, @value)
+      Config.new(config)
+    end
+
     def walk(from : String | Oid, sorting : Sort = Sort::Time, &block)
       walk(from, sorting).each { |c| yield c }
     end
