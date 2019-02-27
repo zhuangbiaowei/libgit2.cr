@@ -37,5 +37,7 @@ lib LibGit
     SubmoduleIgnoreAll         =  4
   end
 
+  type Transaction = Void*
+
   fun libgit2_init = git_libgit2_init : LibC::Int
 end

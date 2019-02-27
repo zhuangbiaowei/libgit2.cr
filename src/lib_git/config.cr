@@ -30,4 +30,8 @@ lib LibGit
   fun config_set_bool = git_config_set_bool(cfg : Config, name : LibC::Char*, value : LibC::Int) : LibC::Int
   fun config_set_string = git_config_set_string(cfg : Config, name : LibC::Char*, value : LibC::Char*) : LibC::Int
   fun config_snapshot = git_config_snapshot(out : Config*, config : Config) : LibC::Int
+  fun config_lock = git_config_lock(tx : Transaction*, cfg : Config) : LibC::Int
+  fun transaction_commit = git_transaction_commit(tx : Transaction) : LibC::Int
+  fun transaction_free = git_transaction_free(tx : Transaction)  
+  fun config_delete_entry = git_config_delete_entry(cfg : Config, name : LibC::Char*) : LibC::Int
 end

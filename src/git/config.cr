@@ -36,6 +36,10 @@ module Git
       end
     end
 
+    def get(key : String)
+      self[key]
+    end
+
     def [](key : String)
       buf = LibGit::Buf.new
       err = LibGit.config_get_string_buf(pointerof(buf), @value, key)
@@ -55,6 +59,21 @@ module Git
       when Int32
         LibGit.config_set_int32(@value, key, value)
       end
+    end
+
+    def transaction(&block)
+      LibGit.config_lock(out tx, @value)
+      begin
+        yield
+        LibGit.transaction_commit(tx)
+      rescue
+      ensure
+        LibGit.transaction_free(tx)
+      end
+    end
+
+    def delete(key : String)
+      LibGit.config_delete_entry(@value, key)
     end
   end
 end
