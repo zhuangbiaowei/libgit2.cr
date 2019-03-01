@@ -2,6 +2,7 @@ require "../src/git"
 require "./fixture_repo"
 require "minitest/autorun"
 require "tmpdir"
+require "pathname"
 
 class RepoyTest < Minitest::Test
   def setup
@@ -482,6 +483,63 @@ class RepositoryDiscoverTest < Minitest::Test
     ensure
       repo.close
       root.close
+    end
+  end
+end
+
+
+class RepositoryInitTest < Minitest::Test
+  @tmppath = ""
+  def setup
+    @tmppath = Dir.mktmpdir
+  end
+
+  def teardown
+    FileUtils.rm_r(@tmppath)
+  end
+
+  def test_init_bare_false
+    repo = Git::Repo.init_at(@tmppath, false)
+    begin
+      refute repo.bare?
+    ensure
+      repo.close
+    end
+  end
+
+  def test_init_bare_true
+    repo = Git::Repo.init_at(@tmppath, true)
+    begin
+      assert repo.bare?
+    ensure
+      repo.close
+    end
+  end
+
+  def test_init_bare_truthy
+    repo = Git::Repo.init_at(@tmppath, :bare)
+    begin
+      assert repo.bare?
+    ensure
+      repo.close
+    end
+  end
+
+  def test_init_non_bare_default
+    repo = Git::Repo.init_at(@tmppath)
+    begin
+      refute repo.bare?
+    ensure
+      repo.close
+    end
+  end
+
+  def test_init_with_pathname
+    repo = Git::Repo.init_at(Pathname.new(@tmppath))
+    begin
+      refute repo.bare?
+    ensure
+      repo.close
     end
   end
 end

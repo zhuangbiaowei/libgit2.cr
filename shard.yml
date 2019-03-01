@@ -14,6 +14,8 @@ dependencies:
     github: ysbaddaden/minitest.cr
   tmpdir:
     github: marceloboeira/tmpdir.cr
+  pathname:
+    github: arcage/crystal-pathname
 
 libraries:
   libgit2: ~> 0.27
