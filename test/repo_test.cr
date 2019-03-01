@@ -1,6 +1,7 @@
 require "../src/git"
 require "./fixture_repo"
 require "minitest/autorun"
+require "tmpdir"
 
 class RepoyTest < Minitest::Test
   def setup
@@ -385,4 +386,85 @@ class RepositoryWriteTest < Minitest::Test
     assert_equal [] of String,  repo.merge_bases("HEAD", baseless)
   end
 
+  def test_default_signature
+    name = "Rugged User"
+    email = "rugged@example.com"
+    repo.config["user.name"] = name
+    repo.config["user.email"] = email
+    assert_equal name, repo.default_signature[:name]
+    assert_equal email, repo.default_signature[:email]
+  end
+
+  def test_ident
+    assert_nil(repo.ident[:name]?)
+    assert_nil(repo.ident[:email]?)
+
+    repo.ident = { name: "Other User" }
+    assert_equal("Other User", repo.ident[:name])
+    assert_nil(repo.ident[:email]?)
+
+    repo.ident = { email: "other@example.com" }
+    assert_nil(repo.ident[:name]?)
+    assert_equal("other@example.com", repo.ident[:email])
+
+    repo.ident = { name: "Other User", email: "other@example.com" }
+    assert_equal("Other User", repo.ident[:name])
+    assert_equal("other@example.com", repo.ident[:email])
+
+    repo.ident = Hash(Symbol,String).new
+    assert_nil(repo.ident[:name]?)
+    assert_nil(repo.ident[:email]?)
+
+    repo.ident = { name: "Other User", email: "other@example.com" }
+    repo.ident = nil
+    assert_nil(repo.ident[:name]?)
+    assert_nil(repo.ident[:email]?)
+  end
+end
+
+class RepositoryDiscoverTest < Minitest::Test
+  @tmpdir = ""
+  def setup
+    @tmpdir = Dir.mktmpdir
+    Dir.mkdir(File.join(@tmpdir, "foo"))
+  end
+  def teardown
+    FileUtils.rm_r(@tmpdir)
+  end
+
+  def test_discover_false
+    assert_raises Git::Error do
+      Git::Repo.discover(@tmpdir)
+    end
+  end
+
+  def test_discover_nested_false
+    assert_raises Git::Error do
+      Git::Repo.discover(File.join(@tmpdir, "foo"))
+    end
+  end
+
+  def test_discover_true
+    repo = Git::Repo.init_at(@tmpdir, true)
+    root = Git::Repo.discover(@tmpdir)
+    begin
+      assert root.bare?
+      assert_equal repo.path, root.path
+    ensure
+      repo.close
+      root.close
+    end
+  end
+
+  def test_discover_nested_true
+    repo = Git::Repo.init_at(@tmpdir, true)
+    root = Git::Repo.discover(File.join(@tmpdir, "foo"))
+    begin
+      assert root.bare?
+      assert_equal repo.path, root.path
+    ensure
+      repo.close
+      root.close
+    end
+  end
 end

@@ -1,6 +1,7 @@
 module Git
   alias Repo = Repository
-  
+  alias IdentHash = Hash(Symbol,String)
+ 
   struct OdbObject
     property type, len, data
     def initialize(@type : Symbol, @len : UInt64, @data : String)
@@ -96,10 +97,12 @@ module Git
     end
 
     def initialize(@path : String)
+      @path = File.expand_path(@path)
       nerr(LibGit.repository_open(out @value, @path), "Couldn't open repository at #{path}")
     end
 
     def initialize(@path : String, options : Hash(Symbol,Array(String)))
+      @path = File.expand_path(@path)
       nerr(LibGit.repository_open(out @value, @path), "Couldn't open repository at #{path}")
       if options[:alternates]
         LibGit.repository_odb(out odb, @value)
@@ -110,6 +113,7 @@ module Git
     end
 
     def initialize(@value : LibGit::Repository, @path : String)
+      @path = File.expand_path(@path)
     end
 
     def value
@@ -117,6 +121,7 @@ module Git
     end
 
     def self.open(path : String)
+      path = File.expand_path(path)
       nerr(LibGit.repository_open(out repo, path), "Couldn't open repository at #{path}")
       new(repo, path)
     end
@@ -127,6 +132,7 @@ module Git
     # clone_at
 
     def self.init_at(path, is_bare = false)
+      path = File.expand_path(path)
       LibGit.repository_init(out repo, path, is_bare ? 1 : 0)
       new(repo, path)
     end
@@ -437,6 +443,39 @@ module Git
       nerr(LibGit.odb_stream_finalize_write(out oid, stream))
       LibGit.odb_stream_free(stream)
       Git::Oid.new(oid).to_s
+    end
+
+    def default_signature
+      LibGit.signature_default(out sig, @value)
+      Git::Signature.new(sig.value)
+    end
+
+    def ident
+      LibGit.repository_ident(out name, out email, @value)
+      ident_hash = IdentHash.new
+      ident_hash[:name]=String.new(name) if name
+      ident_hash[:email]=String.new(email) if email
+      return ident_hash
+    end
+
+    def ident=(ident_hash : IdentHash|NamedTuple)
+      name = ident_hash[:name]? ? ident_hash[:name]?.to_s.to_slice.to_unsafe : nil
+      email = ident_hash[:email]?  ? ident_hash[:email]?.to_s.to_slice.to_unsafe : nil
+      LibGit.repository_set_ident(@value, name, email)
+    end
+
+    def ident=(ident_hash : Nil)
+      LibGit.repository_set_ident(@value, nil, nil)
+    end
+
+    def self.discover(path : String, across_fs = true)
+      buf = LibGit::Buf.new
+      nerr(LibGit.repository_discover(pointerof(buf), path, across_fs, nil))
+      return Repo.new(String.new(buf.ptr))
+    end
+
+    def close
+      LibGit.repository__cleanup(@value)
     end
   end
 end

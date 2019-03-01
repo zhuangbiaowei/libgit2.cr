@@ -12,6 +12,8 @@ description: |
 dependencies:
   minitest:
     github: ysbaddaden/minitest.cr
+  tmpdir:
+    github: marceloboeira/tmpdir.cr
 
 libraries:
   libgit2: ~> 0.27

@@ -16,6 +16,14 @@ module Git
       String.new(@value.email)
     end
 
+    def [](key : Symbol)
+      if key == :name
+        return self.name
+      elsif key == :email
+        return self.email
+      end
+    end
+
     def epoch_time
       @value.when.time
     end
