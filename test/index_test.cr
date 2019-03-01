@@ -161,6 +161,10 @@ class IndexWorkdirTest < Minitest::Test
   def repo
     @repo.as(Git::Repository)
   end
+  def teardown
+    FileUtils.rm_r(repo.path)
+  end
+
   def index
     repo.index
   end

@@ -11,6 +11,10 @@ class ConfigTest < Minitest::Test
     @repo.as(Git::Repo)
   end
 
+  def teardown
+    FileUtils.rm_r(repo.path)
+  end
+
   def test_multi_fetch
     config = repo.config
     fetches = ["+refs/heads/*:refs/remotes/test_remote/*",
@@ -80,6 +84,10 @@ class ConfigWriteTest < Minitest::Test
 
   def repo
     @repo.as(Git::Repo)
+  end
+
+  def teardown
+    FileUtils.rm_r(repo.path)
   end
 
   def test_write_config_values

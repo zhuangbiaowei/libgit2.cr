@@ -8,6 +8,10 @@ class RepoyTest < Minitest::Test
     @repo = FixtureRepo.from_libgit2("testrepo.git")
   end
 
+  def teardown
+    FileUtils.rm_r(repo.path)
+  end
+
   def repo : Git::Repository
     return @repo.as(Git::Repository)
   end
@@ -315,6 +319,10 @@ class MergeCommitsRepositoryTest < Minitest::Test
     @repo.as(Git::Repository)
   end
 
+  def teardown
+    FileUtils.rm_r(repo.path)
+  end
+
   def test_merge_commits
     our_commit = repo.branches["master"].target_id
     their_commit = repo.branches["branch"].target_id
@@ -344,6 +352,11 @@ class ShallowRepositoryTest < Minitest::Test
     @shallow_repo = FixtureRepo.from_libgit2("shallow.git")
   end
 
+  def teardown
+    FileUtils.rm_r(@repo.as(Git::Repo).path)
+    FileUtils.rm_r(@shallow_repo.as(Git::Repo).path)
+  end
+
   def test_is_shallow
     assert !@repo.as(Git::Repo).shallow?
     assert @shallow_repo.as(Git::Repo).shallow?
@@ -358,6 +371,10 @@ class RepositoryWriteTest < Minitest::Test
   def repo
     @repo.as(Git::Repo)
   end
+  def teardown
+    FileUtils.rm_r(repo.path)
+  end
+
   TEST_CONTENT = "my test data\n"
   TEST_CONTENT_TYPE = "blob"
 
