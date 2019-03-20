@@ -373,6 +373,7 @@ class RepositoryWriteTest < Minitest::Test
     @repo.as(Git::Repo)
   end
   def teardown
+    FileUtils.rm_r(@source_repo.as(Git::Repo).path)
     FileUtils.rm_r(repo.path)
   end
 
@@ -542,4 +543,65 @@ class RepositoryInitTest < Minitest::Test
       repo.close
     end
   end
+end
+
+class RepositoryCloneTest < Minitest::Test
+  @tmppath = ""
+  @source_path = ""
+
+  def setup
+    @tmppath = "./test/tmp_clone"
+    @source_path = "file://"+File.expand_path(File.join("." ,"test", "fixtures", "rugged", "testrepo.git"))
+  end
+
+  def teardown
+    FileUtils.rm_r(@tmppath) if Dir.exists?(@tmppath)
+  end
+
+  def test_clone
+    repo = Git::Repo.clone_at(@source_path, @tmppath).as(Git::Repo)
+    begin
+      assert_equal "hey", File.read(File.join(@tmppath, "README")).chomp
+      assert_equal "36060c58702ed4c2a40832c51758d5344201d89a", repo.head.target_id
+      assert_equal "36060c58702ed4c2a40832c51758d5344201d89a", repo.ref("refs/heads/master").target_id
+      assert_equal "36060c58702ed4c2a40832c51758d5344201d89a", repo.ref("refs/remotes/origin/master").target_id
+      assert_equal "41bc8c69075bbdb46c5c6f0566cc8cc5b46e8bd9", repo.ref("refs/remotes/origin/packed").target_id
+    ensure
+      repo.close
+    end
+  end
+
+  def test_clone_bare
+    opt = Git::CloneOptionsHash.new
+    opt[:bare]=true
+    repo = Git::Repo.clone_at(@source_path, @tmppath, opt).as(Git::Repo)
+    begin
+      assert repo.bare?
+    ensure
+      repo.close
+    end
+  end
+
+  def test_clone_with_transfer_progress_callback
+    callsback = 0
+    total_objects = indexed_objects = received_objects = local_objects = total_deltas = indexed_deltas = received_bytes = 0
+    proc = ->(args : Git::TransferProgressArgs){
+      total_objects, indexed_objects, received_objects, local_objects, total_deltas, indexed_deltas, received_bytes = args
+      callsback += 1
+      return 0
+    }
+    opt = Git::CloneOptionsHash.new
+    opt[:transfer_progress] = proc
+    repo = Git::Repo.clone_at(@source_path, @tmppath, opt).as(Git::Repo)
+    repo.close
+    assert_equal 22, callsback
+    assert_equal 19,   total_objects
+    assert_equal 19,   indexed_objects
+    assert_equal 19,   received_objects
+    assert_equal 0,    local_objects
+    assert_equal 2,    total_deltas
+    assert_equal 2,    indexed_deltas
+    assert_equal 1563, received_bytes
+  end
+
 end

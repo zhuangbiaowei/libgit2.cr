@@ -14,11 +14,11 @@ lib LibGit
   struct RemoteCallbacks
     version : LibC::UInt
     sideband_progress : TransportMessageCb
-    completion : (RemoteCompletionType, Void* -> LibC::Int)
+    completion : CompletionCb 
     credentials : CredAcquireCb
     certificate_check : TransportCertificateCheckCb
     transfer_progress : TransferProgressCb
-    update_tips : (LibC::Char*, Oid*, Oid*, Void* -> LibC::Int)
+    update_tips : UpdateTipsCb
     pack_progress : PackbuilderProgress
     push_transfer_progress : PushTransferProgress
     push_update_reference : PushUpdateReferenceCb
@@ -26,6 +26,9 @@ lib LibGit
     transport : TransportCb
     payload : Void*
   end
+  alias CompletionCb = (RemoteCompletionType, Void* -> LibC::Int)
+  alias UpdateTipsCb = (LibC::Char*, Oid*, Oid*, Void* -> LibC::Int)
+
   alias TransportMessageCb = (LibC::Char*, LibC::Int, Void* -> LibC::Int)
   alias CredAcquireCb = (Cred**, LibC::Char*, LibC::Char*, LibC::UInt, Void* -> LibC::Int)
   enum Direction

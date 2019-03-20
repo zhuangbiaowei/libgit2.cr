@@ -25,6 +25,11 @@ lib LibGit
     count : LibC::SizeT
   end
 
+  struct RemoteCallBack
+    transfer_progress_point : Void*
+    transfer_progress_data  : Void*
+  end
+
   fun repository_init_init_options = git_repository_init_init_options(opts : RepositoryInitOptions*, version : LibC::UInt) : LibC::Int
 
   fun merge_base_many = git_merge_base_many(out : Oid*, repo : Repository, length : LibC::SizeT, input_array : Oid*) : LibC::Int
@@ -100,4 +105,95 @@ lib LibGit
   fun repository_ident = git_repository_ident(name : LibC::Char**, email : LibC::Char**, repo : Repository) : LibC::Int
   fun repository_set_ident = git_repository_set_ident(repo : Repository, name : LibC::Char*, email : LibC::Char*) : LibC::Int
   fun repository__cleanup = git_repository__cleanup(repo : Repository) : LibC::Int
+
+  enum CloneLocalT
+    CloneLocalAuto = 0
+    CloneLocal = 1
+    CloneNoLocal = 2
+    CloneLocalNoLinks = 3
+  end
+  enum FetchPruneT
+    FetchPruneUnspecified = 0
+    FetchPrune = 1
+    FetchNoPrune = 2
+  end
+  enum RemoteAutotagOptionT
+    RemoteDownloadTagsUnspecified = 0
+    RemoteDownloadTagsAuto = 1
+    RemoteDownloadTagsNone = 2
+    RemoteDownloadTagsAll = 3
+  end
+  enum CheckoutNotifyT
+    CheckoutNotifyNone = 0
+    CheckoutNotifyConflict = 1
+    CheckoutNotifyDirty = 2
+    CheckoutNotifyUpdated = 4
+    CheckoutNotifyUntracked = 8
+    CheckoutNotifyIgnored = 16
+    CheckoutNotifyAll = 65535
+  end
+
+  alias RepositoryCreateCb = (Repository*, LibC::Char*, LibC::Int, Void* -> LibC::Int)
+  alias RemoteCreateCb = (Remote*, Repository, LibC::Char*, LibC::Char*, Void* -> LibC::Int)
+  alias CheckoutNotifyCb = (CheckoutNotifyT, LibC::Char*, DiffFile*, DiffFile*, DiffFile*, Void* -> LibC::Int)
+  alias CheckoutProgressCb = (LibC::Char*, LibC::SizeT, LibC::SizeT, Void* -> Void)
+  alias CheckoutPerfdataCb = (CheckoutPerfdata*, Void* -> Void)
+
+  struct CloneOptions
+    version : LibC::UInt
+    checkout_opts : CheckoutOptions
+    fetch_opts : FetchOptions
+    bare : LibC::Int
+    local : CloneLocalT
+    checkout_branch : LibC::Char*
+    repository_cb : RepositoryCreateCb
+    repository_cb_payload : Void*
+    remote_cb : RemoteCreateCb
+    remote_cb_payload : Void*
+  end
+  struct CheckoutOptions
+    version : LibC::UInt
+    checkout_strategy : LibC::UInt
+    disable_filters : LibC::Int
+    dir_mode : LibC::UInt
+    file_mode : LibC::UInt
+    file_open_flags : LibC::Int
+    notify_flags : LibC::UInt
+    notify_cb : CheckoutNotifyCb
+    notify_payload : Void*
+    progress_cb : CheckoutProgressCb
+    progress_payload : Void*
+    paths : Strarray
+    baseline : Tree
+    baseline_index : Index
+    target_directory : LibC::Char*
+    ancestor_label : LibC::Char*
+    our_label : LibC::Char*
+    their_label : LibC::Char*
+    perfdata_cb : CheckoutPerfdataCb
+    perfdata_payload : Void*
+  end
+  struct FetchOptions
+    version : LibC::Int
+    callbacks : RemoteCallbacks
+    prune : FetchPruneT
+    update_fetchhead : LibC::Int
+    download_tags : RemoteAutotagOptionT
+    proxy_opts : ProxyOptions
+    custom_headers : Strarray
+  end
+  struct CheckoutPerfdata
+    mkdir_calls : LibC::SizeT
+    stat_calls : LibC::SizeT
+    chmod_calls : LibC::SizeT
+  end
+
+  struct ProgressData
+    fetch_progress : TransferProgress
+    completed_steps : LibC::SizeT
+    total_steps : LibC::SizeT
+    path : LibC::Char*
+  end
+
+  fun clone = git_clone(out : Repository*, url : LibC::Char*, local_path : LibC::Char*, options : CloneOptions*) : LibC::Int
 end
