@@ -28,6 +28,8 @@ lib LibGit
   struct RemoteCallBack
     transfer_progress_point : Void*
     transfer_progress_data  : Void*
+    update_tips_point : Void*
+    update_tips_data  : Void*
   end
 
   fun repository_init_init_options = git_repository_init_init_options(opts : RepositoryInitOptions*, version : LibC::UInt) : LibC::Int

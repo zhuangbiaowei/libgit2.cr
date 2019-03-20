@@ -1,6 +1,6 @@
 module Git
 
-  alias CloneOptionsHash = Hash(Symbol, String|Int32|UInt32|Bool|LibGit::RepositoryCreateCb|LibGit::RemoteCreateCb|CheckoutOptionsHash|FetchOptionsHash|Proc(TransferProgressArgs, Int32))
+  alias CloneOptionsHash = Hash(Symbol, String|Int32|UInt32|Bool|LibGit::RepositoryCreateCb|LibGit::RemoteCreateCb|CheckoutOptionsHash|FetchOptionsHash|Proc(TransferProgressArgs, Int32)|Proc(String, String|Nil, String|Nil, Nil))
   alias FetchOptionsHash = Hash(Symbol, Int32|RemoteCallbacksHash|ProxyOptionsHash|Array(String))
   alias ProxyOptionsHash = Hash(Symbol, UInt32|String|LibGit::CredAcquireCb|LibGit::TransportCertificateCheckCb)
   alias RemoteCallbacksHash = Hash(Symbol, UInt32|LibGit::TransportMessageCb|LibGit::CompletionCb|LibGit::CredAcquireCb|LibGit::TransportCertificateCheckCb|LibGit::TransferProgressCb|LibGit::UpdateTipsCb|LibGit::PackbuilderProgress|LibGit::PushTransferProgress|LibGit::PushUpdateReferenceCb|LibGit::PushNegotiation|LibGit::TransportCb)
@@ -18,9 +18,9 @@ module Git
       if options[:bare]?
         p_opt.value.bare = 1
       end
+      rcb = LibGit::RemoteCallBack.new
       if options[:transfer_progress]?
         tp = options[:transfer_progress].as(Proc(TransferProgressArgs,Int32))
-        rcb = LibGit::RemoteCallBack.new
         rcb.transfer_progress_point = tp.pointer
         rcb.transfer_progress_data = tp.closure_data
  
@@ -37,8 +37,24 @@ module Git
           tpc.call(data_array)
         }
         p_opt.value.fetch_opts.callbacks.transfer_progress = local_tp
-        p_opt.value.fetch_opts.callbacks.payload = Box.box(rcb)
       end
+
+      if options[:update_tips]?
+        ut = options[:update_tips].as(Proc(String, String|Nil, String|Nil, Nil))
+        rcb.update_tips_point = ut.pointer
+        rcb.update_tips_data = ut.closure_data
+        local_ut = ->(refname : LibC::Char*, a : LibGit::Oid*, b : LibGit::Oid*, payload : Void*){
+          local_rcb = Box(LibGit::RemoteCallBack).unbox(payload)
+          utc = Proc(String, String|Nil, String|Nil, Nil).new(local_rcb.update_tips_point, local_rcb.update_tips_data)
+          a_str = Git::Oid.new(a.value).to_real_s
+          b_str = Git::Oid.new(b.value).to_real_s
+          utc.call(String.new(refname), a_str, b_str)
+          return 0
+        }
+        p_opt.value.fetch_opts.callbacks.update_tips = local_ut
+      end
+
+      p_opt.value.fetch_opts.callbacks.payload = Box.box(rcb)
     end
 
     def self.clone_at(url : String, local_path : String, options : CloneOptionsHash|Nil = nil)

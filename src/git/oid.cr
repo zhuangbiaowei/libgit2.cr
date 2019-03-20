@@ -25,5 +25,14 @@ module Git
       p = LibGit.oid_tostr_s(self.p)
       io << String.new(p)
     end
+
+    def to_real_s
+      str = self.to_s
+      if str == "0"*40
+        return nil
+      else
+        return str
+      end
+    end
   end
 end
