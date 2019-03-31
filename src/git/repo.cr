@@ -468,6 +468,15 @@ module Git
       LibGit.repository_set_ident(@value, nil, nil)
     end
 
+    def namespace
+      ns = LibGit.repository_get_namespace(@value)
+      return ns ? String.new(ns) : nil
+    end
+
+    def namespace=(ns : String|Nil)
+      LibGit.repository_set_namespace(@value, ns)
+    end
+
     def self.discover(path : String, across_fs = true)
       buf = LibGit::Buf.new
       nerr(LibGit.repository_discover(pointerof(buf), path, across_fs, nil))

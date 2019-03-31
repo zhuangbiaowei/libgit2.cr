@@ -626,4 +626,63 @@ class RepositoryCloneTest < Minitest::Test
     }, updated_tips)
   end
 
+  def test_clone_with_branch
+    opt = Git::CloneOptionsHash.new
+    opt[:checkout_branch] = "packed"
+    repo = Git::Repo.clone_at(@source_path, @tmppath, opt).as(Git::Repo)
+    begin
+      assert_equal "what file?\n", File.read(File.join(@tmppath, "second.txt"))
+      assert_equal repo.head.target_id, repo.ref("refs/heads/packed").target_id
+      assert_equal "refs/heads/packed", repo.references["HEAD"].target_id
+    ensure
+      repo.close
+    end
+  end
+
+  class RepositoryNamespaceTest < Minitest::Test
+    def setup
+      @repo = FixtureRepo.from_libgit2("testrepo.git")
+    end
+
+    def repo
+      @repo.as(Git::Repo)
+    end
+
+    def test_no_namespace
+      assert_nil repo.namespace
+    end
+
+    def test_changing_namespace
+      repo.namespace = "foo"
+      assert_equal "foo", repo.namespace
+
+      repo.namespace = "bar"
+      assert_equal "bar", repo.namespace
+
+      repo.namespace = "foo/bar"
+      assert_equal "foo/bar", repo.namespace
+
+      repo.namespace = nil
+      assert_nil repo.namespace
+    end
+
+    def test_refs_in_namespaces
+      repo.namespace = "foo"
+      assert_equal [] of String, repo.refs.to_a
+    end
+  end
+
+  class RepositoryPushTest < Minitest::Test
+    def setup
+      @remote_repo = FixtureRepo.from_libgit2("testrepo.git")
+      @remote_repo.as(Git::Repo).config["core.bare"] = "true"
+
+      @repo = FixtureRepo.clone(@remote_repo)
+      @repo.as(Git::Repo).references.create("refs/heads/unit_test",
+        "8496071c1b46c854b31185ea97743be6a8774479")
+    end
+    def test_push_single_ref
+  
+    end
+  end
 end

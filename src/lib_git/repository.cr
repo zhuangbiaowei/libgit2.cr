@@ -101,8 +101,8 @@ lib LibGit
   # fun repository_set_head_detached_from_annotated = git_repository_set_head_detached_from_annotated(repo : Repository, commitish : X_AnnotatedCommit) : LibC::Int
   # fun repository_detach_head = git_repository_detach_head(repo : Repository) : LibC::Int
   # fun repository_state = git_repository_state(repo : Repository) : LibC::Int
-  # fun repository_set_namespace = git_repository_set_namespace(repo : Repository, nmspace : LibC::Char*) : LibC::Int
-  # fun repository_get_namespace = git_repository_get_namespace(repo : Repository) : LibC::Char*
+  fun repository_set_namespace = git_repository_set_namespace(repo : Repository, nmspace : LibC::Char*) : LibC::Int
+  fun repository_get_namespace = git_repository_get_namespace(repo : Repository) : LibC::Char*
   fun repository_is_shallow = git_repository_is_shallow(repo : Repository) : LibC::Int
   fun repository_ident = git_repository_ident(name : LibC::Char**, email : LibC::Char**, repo : Repository) : LibC::Int
   fun repository_set_ident = git_repository_set_ident(repo : Repository, name : LibC::Char*, email : LibC::Char*) : LibC::Int

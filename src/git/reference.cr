@@ -141,6 +141,25 @@ module Git
       end
     end
 
+    def create(name : String, target : String, options = Hash(Symbol, String|LibC::Int).new )
+      log_message = nil
+      force = 0
+      if options[:message]?
+        log_message = options[:message]?.to_s.to_slice.to_unsafe
+      end
+      if options[:force]?
+        force = options[:force]?.as(LibC::Int)
+      end
+      err = LibGit.oid_fromstr(out oid, target)
+      ref = Box.box(0).as(LibGit::Reference)
+      if err == 0
+        LibGit.reference_create(pointerof(ref), @repo, name, pointerof(oid), force, log_message)
+      else
+        LibGit.reference_symbolic_create(pointerof(ref), @repo, name, target, force, log_message)
+      end
+      return Reference.new(ref)
+    end
+
     private class RefIterator < NoError
       include Iterator(Reference)
 

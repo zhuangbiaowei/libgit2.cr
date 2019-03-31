@@ -32,4 +32,6 @@ lib LibGit
   fun reference_next = git_reference_next(out : Reference*, iter : ReferenceIterator) : LibC::Int
   fun reference_next_name = git_reference_next_name(out : LibC::Char**, iter : ReferenceIterator) : LibC::Int
   fun reference_iterator_free = git_reference_iterator_free(iter : ReferenceIterator)
+  fun reference_symbolic_create = git_reference_symbolic_create(out : Reference*, repo : Repository, name : LibC::Char*, target : LibC::Char*, force : LibC::Int, log_message : LibC::Char*) : LibC::Int
+  fun reference_create = git_reference_create(out : Reference*, repo : Repository, name : LibC::Char*, id : Oid*, force : LibC::Int, log_message : LibC::Char*) : LibC::Int
 end

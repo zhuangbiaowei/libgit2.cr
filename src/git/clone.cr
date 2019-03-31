@@ -18,6 +18,9 @@ module Git
       if options[:bare]?
         p_opt.value.bare = 1
       end
+      if options[:checkout_branch]?
+        p_opt.value.checkout_branch = (options[:checkout_branch]?).to_s
+      end
       rcb = LibGit::RemoteCallBack.new
       if options[:transfer_progress]?
         tp = options[:transfer_progress].as(Proc(TransferProgressArgs,Int32))
@@ -38,7 +41,6 @@ module Git
         }
         p_opt.value.fetch_opts.callbacks.transfer_progress = local_tp
       end
-
       if options[:update_tips]?
         ut = options[:update_tips].as(Proc(String, String|Nil, String|Nil, Nil))
         rcb.update_tips_point = ut.pointer
@@ -53,7 +55,6 @@ module Git
         }
         p_opt.value.fetch_opts.callbacks.update_tips = local_ut
       end
-
       p_opt.value.fetch_opts.callbacks.payload = Box.box(rcb)
     end
 
