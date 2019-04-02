@@ -682,7 +682,7 @@ class RepositoryCloneTest < Minitest::Test
         "8496071c1b46c854b31185ea97743be6a8774479")
     end
     def test_push_single_ref
-  
+      
     end
   end
 end

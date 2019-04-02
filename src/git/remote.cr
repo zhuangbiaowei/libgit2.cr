@@ -38,6 +38,19 @@ module Git
         end
         LibGit.remote_disconnect(@value)
     end
+
+    def check_connection(direction : Symbol)
+        if direction == :fetch
+          direction_val = LibGit::Direction::DirectionFetch
+        elsif direction == :push
+          direction_val = LibGit::Direction::DirectionPush
+        else
+          return false
+        end
+        custom_headers = LibGit::Strarray.new
+        err = LibGit.remote_connect(@value, direction_val, nil, nil, pointerof(custom_headers))
+        return err == 0
+    end
   end
 
   class RemoteCollection < NoError
