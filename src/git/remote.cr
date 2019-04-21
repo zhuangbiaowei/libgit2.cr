@@ -39,7 +39,7 @@ module Git
         LibGit.remote_disconnect(@value)
     end
 
-    def check_connection(direction : Symbol)
+    def check_connection(direction : Symbol, opts : NamedTuple(credentials: Git::Credentials::UserPassword)|Nil = nil)
         if direction == :fetch
           direction_val = LibGit::Direction::DirectionFetch
         elsif direction == :push
@@ -47,8 +47,22 @@ module Git
         else
           return false
         end
-        custom_headers = LibGit::Strarray.new
-        err = LibGit.remote_connect(@value, direction_val, nil, nil, pointerof(custom_headers))
+        if opts
+            callbacks = LibGit::RemoteCallbacks.new
+            callbacks.version = 1
+            callbacks.credentials =  -> (cred : LibGit::Cred**, url : LibC::Char*, username_from_url : LibC::Char*, allowed_types : LibC::UInt, payload : Void*){
+                payload_data = Box(LibGit::CredUserPassword).unbox(payload)
+                LibGit.cred_userpass_plaintext_new(cred, payload_data.username, payload_data.password)
+                return 0
+            }
+            payload_data = LibGit::CredUserPassword.new
+            payload_data.username = opts[:credentials].username
+            payload_data.password = opts[:credentials].password
+            callbacks.payload = Box.box(payload_data)
+            err = LibGit.remote_connect(@value, direction_val, pointerof(callbacks), nil, nil)
+        else
+            err = LibGit.remote_connect(@value, direction_val, nil, nil, nil)
+        end
         return err == 0
     end
   end

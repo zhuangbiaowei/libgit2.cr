@@ -26,6 +26,10 @@ lib LibGit
     transport : TransportCb
     payload : Void*
   end
+  struct CredUserPassword
+    username : LibC::Char*
+    password : LibC::Char*
+  end
   alias CompletionCb = (RemoteCompletionType, Void* -> LibC::Int)
   alias UpdateTipsCb = (LibC::Char*, Oid*, Oid*, Void* -> LibC::Int)
 
@@ -160,4 +164,5 @@ lib LibGit
   fun remote_free = git_remote_free(remote : Remote)
   fun remote_list = git_remote_list(out : Strarray*, repo : Repository) : LibC::Int
   fun remote_init_callbacks = git_remote_init_callbacks(opts : RemoteCallbacks*, version : LibC::UInt) : LibC::Int
+  fun cred_userpass_plaintext_new = git_cred_userpass_plaintext_new(out : Cred**, username : LibC::Char*, password : LibC::Char*) : LibC::Int
 end
