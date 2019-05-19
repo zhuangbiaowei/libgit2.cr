@@ -10,7 +10,6 @@ module Git
 
   class Repository < C_Pointer
     @value : LibGit::Repository
-    getter :path
 
     @object_types = {
       LibGit::ObjectT::ObjectAny => :any,
@@ -31,6 +30,12 @@ module Git
       LibGit.odb_object_free(obj)
       LibGit.odb_free(odb)
       return object
+    end
+
+    def path
+      local_path = File.expand_path(@path)
+      local_path = local_path[0..-2] if local_path[-1]=='/'
+      return local_path
     end
 
     def read_header(hex)

@@ -165,4 +165,6 @@ lib LibGit
   fun remote_list = git_remote_list(out : Strarray*, repo : Repository) : LibC::Int
   fun remote_init_callbacks = git_remote_init_callbacks(opts : RemoteCallbacks*, version : LibC::UInt) : LibC::Int
   fun cred_userpass_plaintext_new = git_cred_userpass_plaintext_new(out : Cred**, username : LibC::Char*, password : LibC::Char*) : LibC::Int
+  fun remote_delete = git_remote_delete(repo : Repository, name : LibC::Char*) : LibC::Int
+  fun remote_pushurl = git_remote_pushurl(remote : Remote) : LibC::Char*
 end

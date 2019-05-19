@@ -7,7 +7,30 @@ module Git
     end
 
     def name
-      String.new(LibGit.remote_name(@value))
+      name = LibGit.remote_name(@value)
+      if name == Pointer(UInt8).null
+        return nil
+      else
+        return String.new(name)
+      end
+    end
+
+    def url
+      url = LibGit.remote_url(@value)
+      if url == Pointer(UInt8).null
+        return nil
+      else
+        return String.new(url)
+      end
+    end
+
+    def push_url
+       push_url = LibGit.remote_pushurl(@value)
+      if push_url == Pointer(UInt8).null
+        return nil
+      else
+        return String.new(push_url)
+      end
     end
 
     def finalize
@@ -50,10 +73,9 @@ module Git
         if opts
             callbacks = LibGit::RemoteCallbacks.new
             callbacks.version = 1
-            callbacks.credentials =  -> (cred : LibGit::Cred**, url : LibC::Char*, username_from_url : LibC::Char*, allowed_types : LibC::UInt, payload : Void*){
+            callbacks.credentials = -> (cred : LibGit::Cred**, url : LibC::Char*, username_from_url : LibC::Char*, allowed_types : LibC::UInt, payload : Void*){
                 payload_data = Box(LibGit::CredUserPassword).unbox(payload)
-                LibGit.cred_userpass_plaintext_new(cred, payload_data.username, payload_data.password)
-                return 0
+                return LibGit.cred_userpass_plaintext_new(cred, payload_data.username, payload_data.password)
             }
             payload_data = LibGit::CredUserPassword.new
             payload_data.username = opts[:credentials].username
@@ -97,6 +119,10 @@ module Git
 
     def size
       @keys.size
+    end
+
+    def delete(name : String)
+      LibGit.remote_delete(@repo, name)
     end
   end
 end
